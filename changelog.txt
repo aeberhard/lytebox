@@ -1,0 +1,10 @@
+Addon: Lytebox Version 1.1
+
+14.10.2011 Version 1.1 Tobias Krais http://www.design-to-use.de
+           - Lytebox Version 5.2 mit Video Support
+		   - Deprecated $REDAXO['GG'] ersetzt
+  
+02.07.2000 Version 1.0 Andreas Eberhard <andreas.eberhard@gmail.com>
+           - Erste Version fuer REDAXO ab 3.1
+           - Lytebox Version 3.22
+  

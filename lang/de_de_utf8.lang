@@ -1,0 +1,38 @@
+# Addon: Lytebox de_de
+#
+
+menu_link = Lytebox
+title = Addon: Lytebox
+
+text_help_title = <br /><strong>Lytebox Version 1.1</strong><br /><br />
+text_help_1  = Dieses Addon stellt das Script <strong>Lytebox v5.2</strong> zur Verf&uuml;gung.<br /><br />
+text_help_2  = Lytebox ist wirkungsvolles Javascript zur schnellen Anzeige von Bildern und Videos.<br />Auf modernen Browsern wird die Webseite mit den Bildern &uuml;berlagert.<br /><br />
+text_help_3  = Verwendet wird das Script von Markus F. Hay. <a href="http://lytebox.com/" target="_blank">http://lytebox.com/</a><br /><br />
+text_help_4  = <hr /><br /><strong>Anwendung</strong><br /><br />
+text_help_5  = 1. Lytebox f&uuml;r die gew&uuml;nschten Kategorien ausw&auml;hlen<br /><br />
+text_help_6  = 2. zum aktivieren der Lytebox einfach z.B. bei einem Thumbnail <strong>rel="lytebox"</strong> im Link angeben<br /><br />
+text_help_7  = 3. wenn mehrere Thumbnails mit der Lytebox angezeigt werden sollen, dann <strong>rel="lytebox[galeriename]"</strong> in den Links angeben<br />
+text_help_8  = <br /><br />Mehr Informationen auf <a href="http://lytebox.com" target="_blank">lytebox.com</a><br /><br />
+text_help_9  = &nbsp;
+text_help_10 = &nbsp;
+
+text_settings_intro = Hier k&ouml;nnen Sie ausw&auml;hlen bei welchen Kategorien das Lytebox-Script in die Webseite eingebunden werden soll.<br />Das Script kann entweder bei allen Kategorien oder nur bei ausgew&auml;hlten Kategorien eingebunden werden.
+text_settings_help = <em>Zur Mehrfachauswahl von Kategorien die [Strg]-Taste gedr&uuml;ckt halten!</em>
+text_settings_allcats = <strong>bei allen Kategorien</strong>
+text_settings_subcats = <strong>inklusive Unterkategorien</strong>
+text_rootarticles = --- Root-Arikel ---
+
+msg_saved = <font color="#006600">Einstellungen gespeichert!<br /></font>
+
+error_createdir = Verzeichnis konnte nicht erstellt werden: {0} <br /><br />
+error_readdir = Fehler beim Zugriff auf das Verzeichnis {0} <br /><br />
+error_copyfile = Datei {0} konnte nicht nach {1} kopiert werden <br />
+error_save = <font color="#cc0000"><strong>Datei {0} konnte nicht gespeichert werden! <br /></strong></font>
+error_read = <font color="#cc0000"><strong>Datei {0} konnte nicht gelesen werden! <br /></strong></font>
+
+menu_settings = Einstellungen
+menu_information = Informationen
+menu_changelog = Changelog
+menu_modules = Beispielmodul
+
+button_save = Einstellungen speichern
