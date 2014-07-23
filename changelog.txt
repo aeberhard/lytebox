@@ -1,4 +1,12 @@
-Addon: Lytebox Version 1.1
+Addon: Lytebox Version 5.5
+
+17.07.2014 Version 5.5 Tobias Krais http://www.design-to-use.de
+           - Lytebox Version 5.5
+		   - Versionierung an Versionsnummern von Lytebox angepasst
+		   - Installation für alle Redaxo 4.x Versionen angepasst
+		   - Dateien werden jetzt korrektes Verzeichnis (files/addons/lytebox) kopiert
+		   - Moduldateien jetzt im UTF-8 Format gespeichert
+		   - Youtube Video Modul hinzugfügt
 
 14.10.2011 Version 1.1 Tobias Krais http://www.design-to-use.de
            - Lytebox Version 5.2 mit Video Support
