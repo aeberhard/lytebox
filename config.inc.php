@@ -18,14 +18,14 @@
 	unset($rxa_lytebox);
 	$rxa_lytebox['name'] = 'lytebox';
 
-	$REX['ADDON']['version'][$rxa_lytebox['name']] = '1.8';
+	$REX['ADDON']['version'][$rxa_lytebox['name']] = '5.5';
 	$REX['ADDON']['author'][$rxa_lytebox['name']] = 'Andreas Eberhard';
 
 	$rxa_lytebox['path'] = $REX['INCLUDE_PATH'].'/addons/'.$rxa_lytebox['name'];
 	$rxa_lytebox['basedir'] = dirname(__FILE__);
 	$rxa_lytebox['lang_path'] = $REX['INCLUDE_PATH']. '/addons/'. $rxa_lytebox['name'] .'/lang';
 	$rxa_lytebox['sourcedir'] = $REX['INCLUDE_PATH']. '/addons/'. $rxa_lytebox['name'] .'/'. $rxa_lytebox['name'];
-	$rxa_lytebox['filesdir'] = $REX['HTDOCS_PATH'].'files/'.$rxa_lytebox['name'];
+	$rxa_lytebox['filesdir'] = $REX['HTDOCS_PATH'].'files/addons/'.$rxa_lytebox['name'];
 	$rxa_lytebox['meldung'] = '';
 	$rxa_lytebox['rexversion'] = isset($REX['VERSION']) ? $REX['VERSION'] . $REX['SUBVERSION'] : $REX['version'] . $REX['subversion'];
 
@@ -40,34 +40,34 @@
 
 		// Anlegen eines Navigationspunktes im REDAXO Hauptmenu
 		$REX['ADDON']['page'][$rxa_lytebox['name']] = $rxa_lytebox['name'];
-		// Namensgebung für den Navigationspunkt
+		// Namensgebung fÃ¼r den Navigationspunkt
 		$REX['ADDON']['name'][$rxa_lytebox['name']] = $rxa_lytebox['i18n']->msg('menu_link');
 
-		// Berechtigung für das Addon
+		// Berechtigung fÃ¼r das Addon
 		$REX['ADDON']['perm'][$rxa_lytebox['name']] = $rxa_lytebox['name'].'[]';
-		// Berechtigung in die Benutzerverwaltung einfügen
+		// Berechtigung in die Benutzerverwaltung einfÃ¼gen
 		$REX['PERM'][] = $rxa_lytebox['name'].'[]';		
 	}
 
 /**
  * --------------------------------------------------------------------
- * Outputfilter für das Frontend
+ * Outputfilter fÃ¼r das Frontend
  * --------------------------------------------------------------------
  */
 	if (!$REX['REDAXO']) {
 		rex_register_extension('OUTPUT_FILTER', 'lytebox_opf');
 
-		// Prüfen ob die aktuelle Kategorie mit der Auswahl übereinstimmt
+		// PrÃ¼fen ob die aktuelle Kategorie mit der Auswahl Ã¼bereinstimmt
 		function lytebox_check_cat($acat, $aart, $subcats, $lytebox_cats)
 		{
 
-			// prüfen ob Kategorien ausgewählt
+			// prÃ¼fen ob Kategorien ausgewÃ¤hlt
 			if (!is_array($lytebox_cats)) return false;
 
-			// aktuelle Kategorie in den ausgewählten dabei?
+			// aktuelle Kategorie in den ausgewÃ¤hlten dabei?
 			if (in_array($acat, $lytebox_cats)) return true;
 
-			// Prüfen ob Parent der aktuellen Kategorie ausgewählt wurde
+			// PrÃ¼fen ob Parent der aktuellen Kategorie ausgewÃ¤hlt wurde
 			if ( ($acat > 0) and ($subcats == 1) )
 			{
 				$cat = OOCategory::getCategoryById($acat);
@@ -77,7 +77,7 @@
 				}
 			}
 
-			// evtl. noch Root-Artikel prüfen
+			// evtl. noch Root-Artikel prÃ¼fen
 			if (strstr(implode('',$lytebox_cats), 'r'))
 			{
 				if (in_array($aart.'r', $lytebox_cats)) return true;
@@ -96,7 +96,7 @@
 			$content = $params['subject'];
 			
 			if ( !strstr($content,'</head>') or !file_exists($rxa_lytebox['path'].'/'.$rxa_lytebox['name'].'.ini')
-			 or ( strstr($content,'<script type="text/javascript" src="files/lytebox/lytebox.js"></script>') and strstr($content,'<link rel="stylesheet" href="files/lytebox/lytebox.css" type="text/css" media="screen" />') ) ) {
+			 or ( strstr($content,'<script type="text/javascript" src="files/addons/lytebox/lytebox.js"></script>') and strstr($content,'<link rel="stylesheet" href="files/addons/lytebox/lytebox.css" type="text/css" media="screen" />') ) ) {
 				return $content;
 			}
 
@@ -127,26 +127,26 @@
 			if ( in_array($rxa_lytebox['rexversion'], array('3.11')) ) {
 				$acat = $article->getCategoryId();
 			}
-			if ( in_array($rxa_lytebox['rexversion'], array('32', '40', '41', '42', '43')) ) {
+			else if ($rxa_lytebox['rexversion'] > 31 && $rxa_lytebox['rexversion'] < 50) {
 				$cat = $article->getCategory();
 				if ($cat) {
 					$acat = $cat->getId();
 				}
 			}
-			// Wenn keine Kategorie ermittelt wurde auf -1 setzen für Prüfung in lytebox_check_cat, Prüfung auf Artikel im Root
+			// Wenn keine Kategorie ermittelt wurde auf -1 setzen fÃ¼r PrÃ¼fung in lytebox_check_cat, PrÃ¼fung auf Artikel im Root
 			if (!isset($acat) or !$acat) { $acat = -1; }
 
-         // Array anlegen falls keine Kategorien ausgewählt wurden
+         // Array anlegen falls keine Kategorien ausgewÃ¤hlt wurden
 			if (!is_array($lytebox_cats)){
 				$lytebox_cats = array();
 			}
 
-			// Code für lytebox im head-Bereich ausgeben
+			// Code fÃ¼r lytebox im head-Bereich ausgeben
 			if ( ($allcats==1) or (lytebox_check_cat($acat, $artid, $subcats, $lytebox_cats) == true) )
 			{
 				$rxa_lytebox['output'] = '	<!-- Addon Lytebox '.$REX['ADDON']['version'][$rxa_lytebox['name']].' -->'."\n";
-				$rxa_lytebox['output'] .= '	<script type="text/javascript" src="files/lytebox/lytebox.js"></script>'."\n";
-				$rxa_lytebox['output'] .= '	<link rel="stylesheet" href="files/lytebox/lytebox.css" type="text/css" media="screen" />'."\n";
+				$rxa_lytebox['output'] .= '	<script type="text/javascript" src="files/addons/lytebox/lytebox.js"></script>'."\n";
+				$rxa_lytebox['output'] .= '	<link rel="stylesheet" href="files/addons/lytebox/lytebox.css" type="text/css" media="screen" />'."\n";
 				$content = str_replace('</head>', $rxa_lytebox['output'].'</head>', $content);
 			}
 
