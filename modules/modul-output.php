@@ -2,7 +2,7 @@
 /**
  * --------------------------------------------------------------------
  *
- * Modul-Output: Beispielmodul für Addon Lytebox
+ * Modul-Output: Beispielmodul fÃ¼r Addon Lytebox
  *
  * Autor: Andreas Eberhard, andreas.eberhard@gmail.com
  *        http://rex.andreaseberhard.de
@@ -19,7 +19,7 @@
 	// Bilddateien aus Medialist
 	$rxmodule['imagelist'] = explode(',', trim("REX_MEDIALIST[1]"));
 
-	// maximale Bildgröße
+	// maximale BildgrÃ¶ÃŸe
 	$rxmodule['imgsize'] = trim("REX_VALUE[1]");
 	if ($rxmodule['imgsize']=='')
 	{
@@ -29,11 +29,11 @@
 	// CSS-Klasse
 	$rxmodule['cssclass'] = trim("REX_VALUE[2]");
 
-	// Zufallszahl für Ausgabe
+	// Zufallszahl fÃ¼r Ausgabe
 	srand((double)microtime()*1000000);
 	$rxmodule['random'] = rand (100,900) . rand (100,900); 
 
-	// Links für die Bilder ausgeben
+	// Links fÃ¼r die Bilder ausgeben
 	foreach ($rxmodule['imagelist'] as $rxmodule['file']) {
 
 		$rxmodule['media'] = OOMedia::getMediaByName($rxmodule['file']);
@@ -49,7 +49,7 @@
 				$rxmodule['mediatitle'] = $rxmodule['file'];
 			}
 			echo '<a class="' . $rxmodule['cssclass'] . '" rel="lytebox[lb' . $rxmodule['random']
-					. ']" data-lyte-options="group:'. $rxmodule['random'] .'" '
+					. ']" data-lyte-options="slide:true group:'. $rxmodule['random'] .'" '
 					. 'href="' . $REX['HTDOCS_PATH'] . 'files/' . $rxmodule['file'] 
 					. '" title="' . $rxmodule['mediatitle'] . '">';
 			echo '<img src="' . $REX['HTDOCS_PATH'] . 'index.php?rex_resize=' . $rxmodule['imgsize'] . '__' . $rxmodule['file'] . '" alt="' . $rxmodule['mediatitle'] . '" />';

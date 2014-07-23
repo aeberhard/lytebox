@@ -2,7 +2,7 @@
 /**
  * --------------------------------------------------------------------
  *
- * Modul-Input: Beispielmodul für Addon Lytebox
+ * Modul-Input: Beispielmodul fÃ¼r Addon Lytebox
  *
  * Autor: Andreas Eberhard, andreas.eberhard@gmail.com
  *        http://rex.andreaseberhard.de
@@ -33,11 +33,50 @@
 	</tr>
 
 	<tr>
-		<td valign="top"><strong>CSS-Klasse für die Links</strong></td>
+		<td valign="top"><strong>CSS-Klasse fÃ¼r die Links</strong></td>
 		<td valign="top">
 			<input type="text" style="width:98%;" name="VALUE[2]" value="REX_VALUE[2]" />
 		</td>
 	</tr>
+
+
+	<tr>
+		<td valign="top"><strong>Litebox oder Liteshow</strong></td>
+		<td valign="top">
+<select name="VALUE[3]" >
+<?php
+foreach (array("lytebox","lyteshow") as $value) {
+	echo '<option value="'.$value.'" ';
+	
+	if ( "REX_VALUE[3]"=="$value" ) {
+		echo 'selected="selected" ';
+	}
+	echo '>'.$value.'</option>';
+}
+?>
+</select>
+</td>
+	</tr>
+
+	<tr>
+		<td valign="top"><strong>Serie pro Seite oder pro Block</strong></td>
+		<td valign="top">
+<select name="VALUE[4]" >
+<?php
+foreach (array("Seite","Block") as $value) {
+	echo '<option value="'.$value.'" ';
+	
+	if ( "REX_VALUE[4]"=="$value" ) {
+		echo 'selected="selected" ';
+	}
+	echo '>'.$value.'</option>';
+}
+?>
+</select>
+</td>
+	</tr>
+
+
 
 </table>
 
