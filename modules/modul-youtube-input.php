@@ -8,7 +8,7 @@
  */
 ?>
 
-<strong>Youtube Video URL:</strong> <input type="text" style="width:300px;" name="VALUE[1]" value="REX_VALUE[1]" /><br />
+<strong>Youtube Video URL (http://www.youtube.com/embed/Film-ID):</strong> <input type="text" style="width:300px;" name="VALUE[1]" value="REX_VALUE[1]" /><br />
 Breite des Videos (Standard 800px): <input type="text" style="width:70px;" name="VALUE[2]" value="REX_VALUE[2]" /><br />
 H&ouml;he des Videos (Standard 600px): <input type="text" style="width:70px;" name="VALUE[3]" value="REX_VALUE[3]" /><br />
 <br />
