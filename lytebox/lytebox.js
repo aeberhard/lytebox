@@ -1,16 +1,12 @@
 //**************************************************************************************************/
-//	Lytebox v5.2
+//	Lytebox v5.5
 //
 //	 Author: Markus F. Hay
 //  Website: http://lytebox.com  (http://dolem.com/lytebox)
-//	   Date: October 2, 2011
+//	   Date: January 26, 2012
 //	License: Creative Commons Attribution 3.0 License (http://creativecommons.org/licenses/by/3.0/)
 //**************************************************************************************************/
 function Lytebox(bInitialize, aHttp) {
-	
-	// Below are the default settings that the lytebox viewer will inherit (look and feel, behavior) when displaying content. Member
-	// properties that start with "__" can be manipulated via the data-lyte-options attribute (i.e. data-lyte-options="showPrint:true").
-	
 	/*** Language Configuration ***/
 	
 		// English - configure for your language or customize as needed. 
@@ -28,7 +24,7 @@ function Lytebox(bInitialize, aHttp) {
 	
 	/*** Configure Lytebox ***/
 	
-		this.theme				= 'black';		// themes: black (default), grey, red, green, blue, gold, orange
+		this.theme   			= (typeof lyteboxTheme !== 'undefined') && /^(black|grey|red|green|blue|gold|orange)$/i.test(lyteboxTheme) ? lyteboxTheme : 'black'; // themes: black (default), grey, red, green, blue, gold, orange
 		this.roundedBorder		= true; 		// controls whether or not the viewer uses rounded corners (false = square corners)
 		this.innerBorder		= true;			// controls whether to show the inner border around image/html content
 		this.outerBorder		= true;			// controls whether to show the outer grey (or theme) border
@@ -96,7 +92,6 @@ function Lytebox(bInitialize, aHttp) {
 												// if you are having issues with tooltips not being properly positioned, then set this to false
 
 
-
 	this.navTypeHash = new Object();
 	this.navTypeHash['Hover_by_type_1'] 	= true;
 	this.navTypeHash['Display_by_type_1'] 	= false;
@@ -125,7 +120,6 @@ function Lytebox(bInitialize, aHttp) {
 	this.aPageSize = new Array();
 	this.overlayLoaded = false;
 	this.checkFrame();
-	this.frameSrc = '';
 	this.isSlideshow 	= false;
 	this.isLyteframe 	= false;
 	this.tipSet	 		= false;
@@ -134,16 +128,19 @@ function Lytebox(bInitialize, aHttp) {
 	this.setBrowserInfo();
 	this.classAttribute = (((this.ie && this.doc.compatMode == 'BackCompat') || (this.ie && this.ieVersion <= 7)) ? 'className' : 'class');
 	this.classAttribute = (this.ie && (document.documentMode == 8 || document.documentMode == 9)) ? 'class' : this.classAttribute;
+	this.isReady = false;
 	if (bInitialize) {
 		this.http = aHttp;
 		this.bodyOnscroll = document.body.onscroll;
 		if(this.resizeSpeed > 10) { this.resizeSpeed = 10; }
 		if(this.resizeSpeed < 1) { this.resizeSpeed = 1; }
 		var ie8Duration = 2;
+			var isWinXP = (navigator.userAgent.match(/windows nt 5.1/i) || navigator.userAgent.match(/windows nt 5.2/i) ? true : false);
 		this.resizeDuration = (11 - this.resizeSpeed) * (this.ie ? (this.ieVersion >= 9 ? 6 : (this.ieVersion == 8 ? (this.doc.compatMode == 'BackCompat' ? ie8Duration : ie8Duration - 1) : 3)) : 7);
-		this.resizeDuration = this.ff ? (11 - this.resizeSpeed) * (this.ffVersion < 6 ? 3 : 12) : this.resizeDuration;
+			this.resizeDuration = this.ff ? (11 - this.resizeSpeed) * (this.ffVersion < 6 ? 3 : (isWinXP ? 6 : 12)) : this.resizeDuration;
 		this.resizeDuration = this.chrome ? (11 - this.resizeSpeed) * 5 : this.resizeDuration;
 		this.resizeDuration = this.safari ? (11 - this.resizeSpeed) * 20 : this.resizeDuration;
+			this.resizeDuration = this.isMobile() ? (11 - this.resizeSpeed) * 2 : this.resizeDuration;
 		if (window.name != 'lbIframe') {
 			this.initialize();
 		}
@@ -202,7 +199,7 @@ Lytebox.prototype.initialize = function() {
 	this.updateLyteboxItems();
 	var oBody = this.doc.getElementsByTagName('body').item(0);
 	if (this.doc.$('lbOverlay')) { oBody.removeChild(this.doc.$('lbOverlay')); }
-	if (this.doc.$('lbMain')) {	oBody.removeChild(this.doc.$('lbMain')); }		
+	if (this.doc.$('lbMain')) {	oBody.removeChild(this.doc.$('lbMain')); }
 	if (this.doc.$('lbLauncher')) { oBody.removeChild(this.doc.$('lbLauncher')); }
 	var oLauncher = this.doc.createElement('a');
 		oLauncher.setAttribute('id','lbLauncher');
@@ -392,13 +389,20 @@ Lytebox.prototype.initialize = function() {
 		oPrev.setAttribute(this.classAttribute, this.theme);
 		oPrev.setAttribute('href','javascript:void(0)');
 		oBottomNav.appendChild(oPrev);
+	var iframes = (this.isFrame && window.parent.frames[window.name].document) ? window.parent.frames[window.name].document.getElementsByTagName('iframe') : document.getElementsByTagName('iframe');
+	for (var i = 0; i < iframes.length; i++) {
+		if (/youtube/i.test(iframes[i].src)) {
+			iframes[i].src += ((/\?/.test(iframes[i].src)) ? '&' : '?') + 'wmode=transparent';
+		}
+	}
+	this.isReady = true;
 };
 Lytebox.prototype.updateLyteboxItems = function() {
 	var anchors = (this.isFrame && window.parent.frames[window.name].document) ? window.parent.frames[window.name].document.getElementsByTagName('a') : document.getElementsByTagName('a');
 		anchors = (this.isFrame) ? anchors : document.getElementsByTagName('a');
-	var areas = (this.isFrame) ? window.parent.frames[window.name].document.getElementsByTagName('area') : document.getElementsByTagName('area');
+	var areas = (this.isFrame && window.parent.frames[window.name].document) ? window.parent.frames[window.name].document.getElementsByTagName('area') : document.getElementsByTagName('area');
 	var lyteLinks = this.combine(anchors, areas);
-	var myLink = relAttribute = revAttribute = classAttribute = dataOptions = dataTip = tipDecoration = tipStyle = tipImage = tipHtml = aSetting = sName = sValue = sExt = null;
+	var myLink = relAttribute = revAttribute = classAttribute = dataOptions = dataTip = tipDecoration = tipStyle = tipImage = tipHtml = aSetting = sName = sValue = sExt = aUrl = null;
 	var bImage = bRelative = false;
 	for (var i = 0; i < lyteLinks.length; i++) {
 		myLink = lyteLinks[i];
@@ -409,10 +413,13 @@ Lytebox.prototype.updateLyteboxItems = function() {
 			sType = this.isEmpty(sType) ? relAttribute.match(/lytebox|lyteshow|lyteframe/i) : sType;
 			dataOptions = String(myLink.getAttribute('data-lyte-options'));
 			dataOptions = this.isEmpty(dataOptions) ? String(myLink.getAttribute('rev')) : dataOptions;
-			sExt = myLink.getAttribute('href').split('.').pop().toLowerCase();
+			aUrl = myLink.getAttribute('href').split('?');
+			sExt = aUrl[0].split('.').pop().toLowerCase();
 			bImage = (sExt == 'png' || sExt == 'jpg' || sExt == 'jpeg' || sExt == 'gif' || sExt == 'bmp');
 			if (sType && sType.length >= 1) {
-				if (bImage && (dataOptions.match(/slide:true/i) || sType[0].toLowerCase() == 'lyteshow')) {
+				if (this.isMobile() && /youtube/i.test(myLink.getAttribute('href'))) {
+					myLink.target = '_blank';
+				} else if (bImage && (dataOptions.match(/slide:true/i) || sType[0].toLowerCase() == 'lyteshow')) {
 					myLink.onclick = function () { $lb.start(this, true, false); return false; }
 				} else if (bImage) {
 					myLink.onclick = function () { $lb.start(this, false, false); return false; }
@@ -483,13 +490,21 @@ Lytebox.prototype.updateLyteboxItems = function() {
 };
 Lytebox.prototype.launch = function(args) {
 	var sUrl = this.isEmpty(args.url) ? '' : String(args.url);
-	var sOptions = this.isEmpty(args.options) ? '' : String(args.options).toLowerCase();
+	var sOptions = this.isEmpty(args.options) ? '' : String(args.options);
 	var sTitle = this.isEmpty(args.title) ? '' : args.title;
 	var sDesc = this.isEmpty(args.description) ? '' : args.description;
+	var bSlideshow = /slide:true/i.test(sOptions);
 	if (this.isEmpty(sUrl)) {
 		return false;
 	}
-	var sExt = sUrl.split('.').pop().toLowerCase();
+	if (!this.isReady) {
+		this.timerIDArray[this.timerIDCount++] = setTimeout("$lb.launch({ url: '" + sUrl + "', options: '" + sOptions + "', title: '" + sTitle + "', description: '" + sDesc + "' })", 100);
+		return;
+	} else {
+		for (var i = 0; i < this.timerIDCount; i++) { window.clearTimeout(this.timerIDArray[i]); }
+	}
+	var aUrl = sUrl.split('?');
+	var sExt = aUrl[0].split('.').pop().toLowerCase();
 	var bImage = (sExt == 'png' || sExt == 'jpg' || sExt == 'jpeg' || sExt == 'gif' || sExt == 'bmp');
 	var oLauncher = this.doc.$('lbLauncher');
 		oLauncher.setAttribute('href', sUrl);
@@ -497,7 +512,7 @@ Lytebox.prototype.launch = function(args) {
 		oLauncher.setAttribute('data-title', sTitle);
 		oLauncher.setAttribute('data-description', sDesc);
 	this.updateLyteboxItems();
-	this.start(oLauncher, false, (bImage ? false : true));
+	this.start(oLauncher, bSlideshow, (bImage ? false : true));
 };
 Lytebox.prototype.start = function(oLink, bSlideshow, bFrame) {
 	var dataOptions = String(oLink.getAttribute('data-lyte-options'));
@@ -508,7 +523,7 @@ Lytebox.prototype.start = function(oLink, bSlideshow, bFrame) {
 	if (!this.isEmpty(this.beforeStart)) {
 		var callback = window[this.beforeStart];
 		if (typeof callback === 'function') {
-			if (!callback()) { return; }
+			if (!callback(this.args)) { return; }
 		}
 	}
 	if (this.ie && this.ieVersion <= 6) { this.toggleSelects('hide'); }
@@ -526,9 +541,9 @@ Lytebox.prototype.start = function(oLink, bSlideshow, bFrame) {
 	this.fadeIn({ id: 'lbOverlay', opacity: (this.doAnimations && this.animateOverlay && (!this.ie || this.ieVersion >= 9) ? 0 : this.maxOpacity) });
 	var anchors = (this.isFrame && window.parent.frames[window.name].document) ? window.parent.frames[window.name].document.getElementsByTagName('a') : document.getElementsByTagName('a');
 		anchors = (this.isFrame) ? anchors : document.getElementsByTagName('a');
-	var areas = (this.isFrame) ? window.parent.frames[window.name].document.getElementsByTagName('area') : document.getElementsByTagName('area');
+	var areas = (this.isFrame && window.parent.frames[window.name].document) ? window.parent.frames[window.name].document.getElementsByTagName('area') : document.getElementsByTagName('area');
 	var lyteLinks = this.combine(anchors, areas);
-	var sType = sExt = null;
+	var sType = sExt = aUrl = null;
 	this.frameArray = [];
 	this.frameNum = 0;
 	this.imageArray = [];
@@ -551,7 +566,8 @@ Lytebox.prototype.start = function(oLink, bSlideshow, bFrame) {
 			if (myLink.getAttribute('href') && dataOptions.toLowerCase().match('group:' + this.group)) {
 				sType = String(myLink.getAttribute(this.classAttribute)).match(/lytebox|lyteshow|lyteframe/i);
 				sType = this.isEmpty(sType) ? myLink.getAttribute('rel').match(/lytebox|lyteshow|lyteframe/i) : sType;
-				sExt = myLink.getAttribute('href').split('.').pop().toLowerCase();
+				aUrl = myLink.getAttribute('href').split('?');
+				sExt = aUrl[0].split('.').pop().toLowerCase();
 				bImage = (sExt == 'png' || sExt == 'jpg' || sExt == 'jpeg' || sExt == 'gif' || sExt == 'bmp');
 				if (sType && sType.length >= 1) {
 					if (bImage && (dataOptions.match(/slide:true/i) || sType[0].toLowerCase() == 'lyteshow')) {
@@ -571,7 +587,8 @@ Lytebox.prototype.start = function(oLink, bSlideshow, bFrame) {
 			this.slideArray = this.removeDuplicates(this.slideArray);
 			try {
 				while(this.slideArray[this.slideNum][0] != oLink.getAttribute('href')) { this.slideNum++; }
-			} catch(e) { }
+			} catch(e) {
+			}
 		} else {
 			this.imageArray = this.removeDuplicates(this.imageArray);
 			while(this.imageArray[this.imageNum][0] != oLink.getAttribute('href')) { this.imageNum++; }
@@ -724,10 +741,10 @@ Lytebox.prototype.changeContent = function(iContentNum) {
 		} catch(e) { }
 		this.resizeContainer(parseInt(this.width), parseInt(this.height));
 	} else {
-		imgPreloader = new Image();
-		imgPreloader.onload = function() {
-			var imageWidth = imgPreloader.width;
-			var imageHeight = imgPreloader.height;
+		this.imgPreloader = new Image();
+		this.imgPreloader.onload = function() {
+			var imageWidth = $lb.imgPreloader.width;
+			var imageHeight = $lb.imgPreloader.height;
 			if ($lb.autoResize) {
 				var x = $lb.aPageSize[2] - 50;
 				var y = $lb.aPageSize[3] - 150;
@@ -748,13 +765,13 @@ Lytebox.prototype.changeContent = function(iContentNum) {
 				}
 			}
 			var lbImage = $lb.doc.$('lbImage');
-			lbImage.src = ($lb.isSlideshow ? $lb.slideArray[$lb.contentNum][0] : $lb.imageArray[$lb.contentNum][0]);
+			lbImage.src = $lb.imgPreloader.src;
 			lbImage.width = imageWidth;
 			lbImage.height = imageHeight;
 			$lb.resizeContainer(imageWidth, imageHeight);
-			imgPreloader.onload = function() {};
+			$lb.imgPreloader.onload = function() {};
 		}
-		imgPreloader.src = (this.isSlideshow ? this.slideArray[this.contentNum][0] : this.imageArray[this.contentNum][0]);
+		this.imgPreloader.src = (this.isSlideshow ? this.slideArray[this.contentNum][0] : this.imageArray[this.contentNum][0]);
 	}
 };
 Lytebox.prototype.resizeContainer = function(iWidth, iHeight) {
@@ -793,11 +810,13 @@ Lytebox.prototype.loadContent = function() {
 	try {
 		var iframe = this.doc.$('lbIframe');
 		var uri = this.frameArray[this.contentNum][0];
-		var ext = uri.split('.').pop().toLowerCase();
 		if (!this.inline && this.appendQS) {
 			uri += ((/\?/.test(uri)) ? '&' : '?') + 'request_from=lytebox';
 		}
-		if (!this.autoEmbed || (this.ff && (ext == 'pdf' || ext == 'mov')) || ext == 'wmv') {
+		if (this.autoPlay && /youtube/i.test(uri)) {
+			uri += ((/\?/.test(uri)) ? '&' : '?') + 'autoplay=1';
+		}
+			if (!this.autoEmbed || (this.ff && (uri.match(/.pdf|.mov|.wmv/i)))) {
 			this.frameSource = uri;
 			this.showContent();
 			return;
@@ -815,10 +834,10 @@ Lytebox.prototype.loadContent = function() {
 				$lb.doc.$('lbIframe').onload = null;
 			};
 		}
-		if (this.inline || (ext == 'mov' || ext == 'avi' || ext == 'wmv' || ext == 'mpg' || ext == 'mpeg' || ext == 'swf')) {
+		if (this.inline || (uri.match(/.mov|.avi|.wmv|.mpg|.mpeg|.swf/i))) {
 			iframe.src = 'about:blank';
 			this.frameSource = '';
-			var sHtml = (this.inline) ? this.doc.$(uri.substr(uri.indexOf('#') + 1, uri.length)).innerHTML : this.buildObject(parseInt(this.width), parseInt(this.height), uri, ext);
+			var sHtml = (this.inline) ? this.doc.$(uri.substr(uri.indexOf('#') + 1, uri.length)).innerHTML : this.buildObject(parseInt(this.width), parseInt(this.height), uri);
 			var oDoc = iframe.contentWindow || iframe.contentDocument;
 			if (oDoc.document) {
 				oDoc = oDoc.document;
@@ -906,7 +925,7 @@ Lytebox.prototype.showContent = function() {
 	if (!this.isEmpty(this.afterStart)) {
 		var callback = window[this.afterStart];
 		if (typeof callback === 'function') {
-			callback();
+			callback(this.args);
 		}
 	}
 };
@@ -1208,7 +1227,7 @@ Lytebox.prototype.end = function(sCaller) {
 	if (!this.isEmpty(this.beforeEnd)) {
 		var callback = window[this.beforeEnd];
 		if (typeof callback === 'function') {
-			if (!callback()) { return; }
+			if (!callback(this.args)) { return; }
 		}
 	}
 	this.disableKeyboardNav();
@@ -1243,7 +1262,7 @@ Lytebox.prototype.end = function(sCaller) {
 	if (!this.isEmpty(this.afterEnd)) {
 		var callback = window[this.afterEnd];
 		if (typeof callback === 'function') {
-			callback();
+			callback(this.args);
 		}
 	}
 };
@@ -1280,6 +1299,7 @@ Lytebox.prototype.fadeIn = function(args) {
 	var iIncrement = iSpeed;
 	if (/lbImage|lbIframe|lbOverlay|lbBottomContainer|lbTopContainer/.test(sId)) {
 		iIncrement = this.ff ? (this.ffVersion >= 6 ? 2 : 5) : (this.safari ? 3 : (this.ieVersion <= 8 ? 10 : 5));
+		iIncrement = this.isMobile() ? 20 : iIncrement;
 		iIncrement = (sId == 'lbOverlay' ? iIncrement * 2 : iIncrement);
 		iIncrement = (sId == 'lbIframe' ? 100 : iIncrement);
 	} else if (this.ieVersion == 7 || this.ieVersion == 8) {
@@ -1411,6 +1431,8 @@ Lytebox.prototype.getPageSize = function() {
 	} else if (document.documentElement && document.documentElement.clientHeight) {
 		windowWidth = this.doc.documentElement.clientWidth;
 		windowHeight = this.doc.documentElement.clientHeight;
+		windowWidth = (windowWidth == 0) ? this.doc.body.clientWidth : windowWidth;
+		windowHeight = (windowHeight == 0) ? this.doc.body.clientHeight : windowHeight;
 	} else if (document.body) {
 		windowWidth = this.doc.getElementsByTagName("html").item(0).clientWidth;
 		windowHeight = this.doc.getElementsByTagName("html").item(0).clientHeight;
@@ -1437,13 +1459,14 @@ Lytebox.prototype.toggleObjects = function(sState) {
 				for (var j = 0; j < objects.length; j++) {
 					objects[j].style.visibility = (sState == "hide") ? 'hidden' : 'visible';
 				}
-			} catch(e) { }
+			} catch(e) {}
+			
 			try {
 				embeds = parent.frames[i].window.document.getElementsByTagName("embed");
 				for (var j = 0; j < embeds.length; j++) {
 					embeds[j].style.visibility = (sState == "hide") ? 'hidden' : 'visible';
 				}
-			} catch(e) { }
+			} catch(e) {}
 		}
 	}
 };
@@ -1459,7 +1482,7 @@ Lytebox.prototype.toggleSelects = function(sState) {
 				for (var j = 0; j < selects.length; j++) {
 					selects[j].style.visibility = (sState == "hide") ? 'hidden' : 'visible';
 				}
-			} catch(e) { }
+			} catch(e) {}
 		}
 	}
 };
@@ -1492,8 +1515,8 @@ Lytebox.prototype.removeDuplicates = function (aArray) {
 	return aNew;
 };
 Lytebox.prototype.printWindow = function () {
-	var w = 400;
-	var h = 300;
+	var w = this.isLyteframe ? 800 : this.imgPreloader.width + 20;
+	var h = this.isLyteframe ? 600 : this.imgPreloader.height + 20;
 	var left = parseInt((screen.availWidth/2) - (w/2));
 	var top = parseInt((screen.availHeight/2) - (h/2));
 	var wOpts = "width=" + w + ",height=" + h + ",left=" + left + ",top=" + top + "screenX=" + left + ",screenY=" + top + "directories=0,location=0,menubar=0,resizable=0,scrollbars=0,status=0,titlebar=0,toolbar=0";
@@ -1505,15 +1528,18 @@ Lytebox.prototype.printWindow = function () {
 	var t = setTimeout("$lb.printContent()",1000);
 };
 Lytebox.prototype.printContent = function() {
-	if (this.wContent.document.readyState == 'complete') {
-		this.wContent.print();
-		this.wContent.close();
-		this.wContent = null;
-	} else {
-		var t = setTimeout("$lb.printContent()",1000);
-	}
+	try {
+		if (this.wContent.document.readyState == 'complete') {
+			this.wContent.print();
+			this.wContent.close();
+			this.wContent = null;
+		} else {
+			var t = setTimeout("$lb.printContent()",1000);
+		}
+	} catch(e) { }
 };
 Lytebox.prototype.setOptions = function(sOptions) {
+	this.args = '';
 	this.group = '';
 	this.inline = false;
 	this.hideObjects = this.__hideObjects;
@@ -1568,6 +1594,7 @@ Lytebox.prototype.setOptions = function(sOptions) {
 			case 'afterstart':		this.afterStart = (!this.isEmpty(sValue) ? sValue : this.__afterStart); break;
 			case 'beforeend':		this.beforeEnd = (!this.isEmpty(sValue) ? sValue : this.__beforeEnd); break;
 			case 'afterend':		this.afterEnd = (!this.isEmpty(sValue) ? sValue : this.__afterEnd); break;
+			case 'args': 			this.args = (!this.isEmpty(sValue) ? sValue : ''); break;
 			case 'scrollbars':		this.scrolling = (/auto|yes|no/.test(sValue) ? sValue : this.__scrolling); break;
 			case 'scrolling':		this.scrolling = (/auto|yes|no/.test(sValue) ? sValue : this.__scrolling); break;
 			case 'width':			this.width = (/\d(%|px|)/.test(sValue) ? sValue : this.__width); break;
@@ -1587,17 +1614,17 @@ Lytebox.prototype.setOptions = function(sOptions) {
 			case 'loopslideshow':	this.loopSlideshow = (/true|false/.test(sValue) ? (sValue == 'true') : this.__loopSlideshow); break;
 		}
 	}
-	
 };
-Lytebox.prototype.buildObject = function(w, h, url, ext) {
+	Lytebox.prototype.buildObject = function(w, h, url) {
 	var object = '';
 	var classId = '';
 	var codebase = '';
 	var pluginsPage = '';
 	var auto = this.autoPlay ? 'true' : 'false';
 	var loop = this.loopPlayback ? 'true' : 'false';
-	switch(ext) {
-		case 'mov':
+	var type = url.match(/.mov|.avi|.wmv|.mpg|.mpeg|.swf/i);
+	switch(type[0]) {
+	case '.mov':
 			codebase = 'http://www.apple.com/qtactivex/qtplugin.cab';
 			pluginsPage = 'http://www.apple.com/quicktime/';
 			classId = 'clsid:02BF25D5-8C17-4B23-BC80-D3488ABDDC6B';
@@ -1616,10 +1643,10 @@ Lytebox.prototype.buildObject = function(w, h, url, ext) {
 						+ '</div>';
 			}
 			break;
-		case 'avi':
-		case 'mpg':
-		case 'mpeg':
-		case 'wmv':
+		case '.avi':
+		case '.mpg':
+		case '.mpeg':
+		case '.wmv':
 			classId = 'clsid:02BF25D5-8C17-4B23-BC80-D3488ABDDC6B';			
 			object 	= '<object classid="' + classId + '" width="' + w + '" height="' + h + '" codebase="' + codebase + '">'
 					+ '<param name="src" value="' + url + '">'
@@ -1633,7 +1660,7 @@ Lytebox.prototype.buildObject = function(w, h, url, ext) {
 					+ '</object>' 
 					+ '</object>';
 			break;
-		case 'swf':
+		case '.swf':
 			classId = 'clsid:D27CDB6E-AE6D-11cf-96B8-444553540000';
 			object 	= '<object classid="' + classId + '" width="' + w + '" height="' + h + '" codebase="' + codebase + '">'
 					+ '<param name="movie" value="' + url + '">'
@@ -1656,7 +1683,7 @@ Lytebox.prototype.buildObject = function(w, h, url, ext) {
 			break;
 	}
 	return object;
-};	
+};
 Lytebox.prototype.getQuicktimeVersion = function() {
 	var agent = navigator.userAgent.toLowerCase(); 
 	var version = -1;
@@ -1703,7 +1730,7 @@ Lytebox.prototype.findPos = function(el) {
 	}
 	return [left, top, height];
 };
-Lytebox.prototype.isMobile = function() {	
+Lytebox.prototype.isMobile = function() {
 	var ua = navigator.userAgent;
 	return (ua.match(/ipad/i) != null)
 		|| (ua.match(/ipod/i) != null)
@@ -1714,7 +1741,6 @@ Lytebox.prototype.isMobile = function() {
 		|| (ua.match(/(pre\/|palm os|palm|hiptop|avantgo|plucker|xiino|blazer|elaine)/i) != null)
 		|| (ua.match(/(iris|3g_t|windows ce|opera mobi|windows ce; smartphone;|windows ce; iemobile)/i) != null)
 		|| (ua.match(/(mini 9.5|vx1000|lge |m800|e860|u940|ux840|compal|wireless| mobi|ahong|lg380|lgku|lgu900|lg210|lg47|lg920|lg840|lg370|sam-r|mg50|s55|g83|t66|vx400|mk99|d615|d763|el370|sl900|mp500|samu3|samu4|vx10|xda_|samu5|samu6|samu7|samu9|a615|b832|m881|s920|n210|s700|c-810|_h797|mob-x|sk16d|848b|mowser|s580|r800|471x|v120|rim8|c500foma:|160x|x160|480x|x640|t503|w839|i250|sprint|w398samr810|m5252|c7100|mt126|x225|s5330|s820|htil-g1|fly v71|s302|-x113|novarra|k610i|-three|8325rc|8352rc|sanyo|vx54|c888|nx250|n120|mtk |c5588|s710|t880|c5005|i;458x|p404i|s210|c5100|teleca|s940|c500|s590|foma|samsu|vx8|vx9|a1000|_mms|myx|a700|gu1100|bc831|e300|ems100|me701|me702m-three|sd588|s800|8325rc|ac831|mw200|brew |d88|htc\/|htc_touch|355x|m50|km100|d736|p-9521|telco|sl74|ktouch|m4u\/|me702|8325rc|kddi|phone|lg |sonyericsson|samsung|240x|x320|vx10|nokia|sony cmd|motorola|up.browser|up.link|mmp|symbian|smartphone|midp|wap|vodafone|o2|pocket|kindle|mobile|psp|treo)/i) != null);
-		
 };
 Lytebox.prototype.validate = function(args) {
 	var reTest = sName = '';
@@ -1724,6 +1750,7 @@ Lytebox.prototype.validate = function(args) {
 	var sType = this.isEmpty(args.type) ? '' : String(args.type).toLowerCase();
 	var sRegex = this.isEmpty(args.regex) ? '' : args.regex;
 	var sCCType = (/visa|mc|amex|diners|discover|jcb/.test(args.ccType) ? args.ccType : '');
+	var sImageType = this.isEmpty(args.imageType) ? '' : String(args.imageType.toLowerCase());
 	var iMin = (/^\d+$/.test(args.min) ? parseInt(args.min) : 0);
 	var iMax = (/^\d+$/.test(args.max) ? parseInt(args.max) : 0);
 	var bInclusive = args.inclusive ? true : (/true|false/.test(args.inclusive) ? (args.inclusive == 'true') : true);
@@ -1774,6 +1801,12 @@ Lytebox.prototype.validate = function(args) {
 				bValid = /^([a-z0-9_\.\-])+\@(([a-z0-9\-])+\.)+([a-z0-9]{2,4})+$/i.test(sInput); break;
 			case 'float':
 				bValid = /^[-+]?[0-9]*\.?[0-9]+$/.test(bAllowComma ? sInput.replace(/\,/g,'') : sInput); break;
+			case 'image':
+				if (this.isEmpty(sImageType)) {
+					bValid = /^(png|jpg|jpeg|gif)$/i.test(sInput.split('.').pop()); break;
+				} else {
+					bValid = (sInput.split('.').pop().toLowerCase().match(sImageType) ? true : false); break;
+				}
 			case 'int':
 			case 'integer':
 				bValid = /^[-+]?\d+$/.test(sInput.replace(/\,/g,'')); break;
@@ -1790,9 +1823,9 @@ Lytebox.prototype.validate = function(args) {
 				bValid = /\b((?:[a-z][\w-]+:(?:\/{1,3}|[a-z0-9%])|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}\/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'".,<>?«»""'']))/i.test(sInput); break;
 			case 'zip':
 				bValid = /^\d{5}$|^\d{5}-\d{4}$/.test(sInput); break;
-		}	
+		}
 	}
-	return bValid;	
+	return bValid;
 };
 Lytebox.prototype.ajax = function(args) {
 	var iIndex = this.http.length;
@@ -1808,18 +1841,19 @@ Lytebox.prototype.ajax = function(args) {
 	oRequest.onreadystatechange = function() {
 		return function() {
 			if (oRequest.readyState == 4 && oRequest.status == 200) {
-				var sResponse = oRequest.responseText;
 				if (document.getElementById(oHttpArgs.updateId)) {
-					document.getElementById(oHttpArgs.updateId).innerHTML = sResponse;
+					try {
+						document.getElementById(oHttpArgs.updateId).innerHTML = oRequest.responseText;
+					} catch(e) { alert(e.description ); };
 				}
 				if (typeof oHttpArgs.success === 'function') {
-					oHttpArgs.success(sResponse);
+					oHttpArgs.success(oRequest);
 				}
 				window.clearTimeout(oHttpArgs.timerId);
 				$lb.http[oHttpArgs.index] = null;
 			} else if (oRequest.readyState == 4 && oRequest.status != 200) {
 				if (typeof oHttpArgs.fail === 'function') {
-					oHttpArgs.fail(oRequest.responseText);
+					oHttpArgs.fail(oRequest);
 				}
 				window.clearTimeout(oHttpArgs.timerId);
 				$lb.http[oHttpArgs.index] = null;
@@ -1850,7 +1884,7 @@ Lytebox.prototype.serialize = function(args) {
 				oElements = document.forms[i].elements;
 			}
 		}
-	}				
+	}
 	for (var i = 0; i < oElements.length; i++) {
 		if ((oElements[i].type == 'checkbox' && !oElements[i].checked) ||
 			(oElements[i].type == 'radio' && !oElements[i].checked) ||
@@ -1903,7 +1937,7 @@ Lytebox.prototype.stripTags = function(args) {
 		} catch(e) {
 			sValue = args;
 		}
-		return String(sValue).replace(/(<([^>]+)>)/ig, '');
+		return (this.trim(sValue) == '[object Object]') ? '' : String(sValue).replace(/(<([^>]+)>)/ig, '');
 	}
 };
 Lytebox.prototype.trim = function(args) {
@@ -1931,7 +1965,7 @@ Lytebox.prototype.addClass = function (args) {
 		if (!this.hasClass({ element: oElement, name: aClasses[i] })) {
 			oElement.className += ' ' + aClasses[i];
 		}
-	}	
+	}
 };
 Lytebox.prototype.removeClass = function (args) {
 	var sClass = this.isEmpty(args.name) ? '' : args.name;
