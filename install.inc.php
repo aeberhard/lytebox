@@ -23,14 +23,6 @@
 		return;
 	}
 
-   // Gültige REDAXO-Version abfragen
-	if ( !in_array($rxa_lytebox['rexversion'], array('3.11', '32', '40', '41', '42', '43')) ) {
-		echo '<font color="#cc0000"><strong>Fehler! Ung&uuml;ltige REDAXO-Version - '.$rxa_lytebox['rexversion'].'</strong></font>';
-		$REX['ADDON']['installmsg'][$rxa_lytebox['name']] = '<br /><br /><font color="#cc0000"><strong>Fehler! Ung&uuml;ltige REDAXO-Version - '.$rxa_lytebox['rexversion'].'</strong></font>';
-		$REX['ADDON']['install'][$rxa_lytebox['name']] = 0;
-		return;
-	}
-
 	// Verzeichnis files/lytebox anlegen
 	if ( !@is_dir($rxa_lytebox['filesdir']) ) {
 		if ( !@mkdir($rxa_lytebox['filesdir']) ) {
